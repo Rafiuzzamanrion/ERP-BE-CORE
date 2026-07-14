@@ -1,0 +1,47 @@
+[project]
+name = "erp-be-fastapi"
+version = "1.0.0"
+description = "ERP Inventory & Sales Management - FastAPI Backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "pymongo>=4.10.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "PyJWT>=2.9.0",
+    "bcrypt>=4.0.0",
+    "cloudinary>=1.42.0",
+    "python-multipart>=0.0.18",
+    "python-socketio>=5.12.0",
+    "structlog>=24.4.0",
+    "colorama>=0.4.6",
+    "slowapi>=0.1.10",
+    "redis>=5.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "ruff>=0.11.0",
+    "mypy>=1.15.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM"]
+ignore = ["E501", "B008", "B904", "UP046"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
