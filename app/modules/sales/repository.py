@@ -108,7 +108,9 @@ class SaleRepository:
             raise
         except Exception as e:
             logger.error("sale_transaction_failed", error=str(e))
-            raise AppException("Failed to create sale", HttpStatus.INTERNAL_SERVER_ERROR)
+            raise AppException(
+                "Failed to create sale", HttpStatus.INTERNAL_SERVER_ERROR
+            )
 
     async def _populate(self, sale_id) -> dict:
         pipeline = [
