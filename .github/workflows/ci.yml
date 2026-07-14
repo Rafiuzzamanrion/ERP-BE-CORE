@@ -3,11 +3,35 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync
-      - run: uv run ruff check app/ tests/
-      - run: uv run ruff format --check app/ tests/
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Lint
+        run: uv run ruff check app/ tests/
+
+      - name: Format check
+        run: uv run ruff format --check app/ tests/
+
+      - name: Tests
+        run: uv run pytest tests/ -v
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+          DB_NAME: erp-ci-test
+          JWT_SECRET: ci-test-secret
+          REDIS_URL: memory://
+          CLOUDINARY_CLOUD_NAME: test
+          CLOUDINARY_API_KEY: test
+          CLOUDINARY_API_SECRET: test
