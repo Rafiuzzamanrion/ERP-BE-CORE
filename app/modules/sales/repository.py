@@ -38,14 +38,9 @@ class SaleRepository:
         self.sio = sio
 
     async def create_transaction(self, data: dict, user_id: str) -> dict:
-        client = self.db.client
-        session = client.start_session()
         try:
-            await session.start_transaction()
             product_ids = [ObjectId(item["productId"]) for item in data["items"]]
-            products_cursor = self.db["products"].find(
-                {"_id": {"$in": product_ids}}, session=session
-            )
+            products_cursor = self.db["products"].find({"_id": {"$in": product_ids}})
             products = await products_cursor.to_list(length=None)
             product_map = {str(p["_id"]): p for p in products}
             items_with_details = []
@@ -95,30 +90,25 @@ class SaleRepository:
                     )
 
             if bulk_ops:
-                await self.db["products"].bulk_write(bulk_ops, session=session)
+                await self.db["products"].bulk_write(bulk_ops)
+
             sale_doc = {
                 "items": items_with_details,
                 "grandTotal": round(grand_total, 2),
                 "soldBy": ObjectId(user_id),
             }
-            result = await self.db["sales"].insert_one(sale_doc, session=session)
-            await session.commit_transaction()
+            result = await self.db["sales"].insert_one(sale_doc)
 
             for low_stock in low_stock_products:
                 if self.sio:
                     await self.sio.emit("stock:low", low_stock)
+
             return await self._populate(result.inserted_id)
         except AppException:
-            await session.abort_transaction()
             raise
         except Exception as e:
-            await session.abort_transaction()
             logger.error("sale_transaction_failed", error=str(e))
-            raise AppException(
-                "Failed to create sale", HttpStatus.INTERNAL_SERVER_ERROR
-            )
-        finally:
-            await session.end_session()
+            raise AppException("Failed to create sale", HttpStatus.INTERNAL_SERVER_ERROR)
 
     async def _populate(self, sale_id) -> dict:
         pipeline = [

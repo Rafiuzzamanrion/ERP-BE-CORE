@@ -33,20 +33,15 @@ async def test_create_sale_success_and_stock_deduction(client, employee_token, d
     )
     product = await db["products"].find_one({"sku": "SP-001"})
 
-    from app.infrastructure.mongo.client import get_client as _gcl
-
-    with patch("app.infrastructure.mongo.client.get_client") as mock_get_client:
-        mock_get_client.side_effect = _gcl
-
-        resp = await client.post(
-            "/api/v1/sales",
-            headers={"Authorization": f"Bearer {employee_token}"},
-            json={
-                "items": [
-                    {"productId": str(product["_id"]), "quantity": 3},
-                ],
-            },
-        )
+    resp = await client.post(
+        "/api/v1/sales",
+        headers={"Authorization": f"Bearer {employee_token}"},
+        json={
+            "items": [
+                {"productId": str(product["_id"]), "quantity": 3},
+            ],
+        },
+    )
 
     assert resp.status_code == 201
     data = resp.json()
