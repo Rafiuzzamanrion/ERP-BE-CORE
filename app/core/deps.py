@@ -52,7 +52,7 @@ class RoleChecker:
             return user
 
         role_name = await _resolve_role_name(user.get("role", ""))
-        if not role_name or role_name not in self.allowed_roles:
+        if not role_name or role_name.lower().strip() not in self.allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to perform this action",
